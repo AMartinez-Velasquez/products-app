@@ -10,6 +10,7 @@ function App() {
     price: '',
     stock: ''
   });
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -35,7 +36,12 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/api/products', newProduct);
+      if (editingId) {
+        await axios.put(`http://localhost:3001/api/products/${editingId}`, newProduct);
+        setEditingId(null);
+      } else {
+        await axios.post('http://localhost:3001/api/products', newProduct);
+      }
       setNewProduct({
         name: '',
         description: '',
@@ -44,8 +50,53 @@ function App() {
       });
       fetchProducts();
     } catch (error) {
-      console.error('Error al crear producto:', error);
+      console.error('Error al guardar producto:', error);
     }
+  };
+
+  const handleEdit = (product) => {
+    setNewProduct({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      stock: product.stock
+    });
+    setEditingId(product.id);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+      try {
+        console.log('Intentando eliminar producto con ID:', id);
+        const response = await axios.delete(`http://localhost:3001/api/products/${id}`);
+        console.log('Respuesta del servidor:', response);
+        
+        if (response.status === 200) {
+          setProducts(products.filter(product => product.id !== id));
+          alert('Producto eliminado con éxito');
+        }
+      } catch (error) {
+        console.error('Error completo:', error);
+        console.error('Status del error:', error.response?.status);
+        console.error('Datos del error:', error.response?.data);
+        
+        if (error.response?.status === 404) {
+          alert('El producto no fue encontrado. Puede que ya haya sido eliminado.');
+        } else {
+          alert(`Error al eliminar el producto: ${error.response?.data?.message || 'Error desconocido'}`);
+        }
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setNewProduct({
+      name: '',
+      description: '',
+      price: '',
+      stock: ''
+    });
+    setEditingId(null);
   };
 
   return (
@@ -53,7 +104,7 @@ function App() {
       <h1>Sistema de Gestión de Productos</h1>
       
       <div className="product-form">
-        <h2>Agregar Nuevo Producto</h2>
+        <h2>{editingId ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h2>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -86,7 +137,12 @@ function App() {
             onChange={handleInputChange}
             required
           />
-          <button type="submit">Agregar Producto</button>
+          <div className="form-buttons">
+            <button type="submit">{editingId ? 'Actualizar' : 'Agregar Producto'}</button>
+            {editingId && (
+              <button type="button" onClick={handleCancel}>Cancelar</button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -99,6 +155,7 @@ function App() {
               <th>Descripción</th>
               <th>Precio</th>
               <th>Stock</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -108,6 +165,10 @@ function App() {
                 <td>{product.description}</td>
                 <td>${product.price}</td>
                 <td>{product.stock}</td>
+                <td>
+                  <button className="edit-btn" onClick={() => handleEdit(product)}>Editar</button>
+                  <button className="delete-btn" onClick={() => handleDelete(product.id)}>Eliminar</button>
+                </td>
               </tr>
             ))}
           </tbody>

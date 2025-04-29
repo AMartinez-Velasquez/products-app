@@ -34,10 +34,13 @@ input {
   font-size: 16px;
 }
 
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}
+
 button {
   padding: 12px;
-  background-color: #4CAF50;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -45,8 +48,22 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
+button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+button[type="submit"]:hover {
   background-color: #45a049;
+}
+
+button[type="button"] {
+  background-color: #f44336;
+  color: white;
+}
+
+button[type="button"]:hover {
+  background-color: #d32f2f;
 }
 
 .product-list {
@@ -72,4 +89,28 @@ th {
 
 tr:hover {
   background-color: #f5f5f5;
+}
+
+td button {
+  margin-right: 5px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.edit-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #1976D2;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
 } 
