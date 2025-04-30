@@ -3,6 +3,14 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const sequelize = require('./config/database');
 
+// Importar controladores
+const {
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct
+} = require('./src/controllers/productController');
+
 // Configuración de variables de entorno
 dotenv.config();
 
@@ -37,76 +45,11 @@ const initializeDatabase = async () => {
   }
 };
 
-// GET - Obtener todos los productos
-app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.findAll();
-    res.json(products);
-  } catch (error) {
-    console.error('Error al obtener productos:', error);
-    res.status(500).json({ message: 'Error al obtener productos', error: error.message });
-  }
-});
-
-// POST - Crear un nuevo producto
-app.post('/api/products', async (req, res) => {
-  try {
-    const { name, description, price, stock } = req.body;
-    const newProduct = await Product.create({
-      name,
-      description,
-      price,
-      stock
-    });
-    res.status(201).json(newProduct);
-  } catch (error) {
-    console.error('Error al crear producto:', error);
-    res.status(400).json({ message: 'Error al crear producto', error: error.message });
-  }
-});
-
-// PUT - Actualizar un producto
-app.put('/api/products/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, description, price, stock } = req.body;
-    
-    const product = await Product.findByPk(id);
-    if (!product) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
-    }
-
-    await product.update({
-      name,
-      description,
-      price,
-      stock
-    });
-
-    res.json(product);
-  } catch (error) {
-    console.error('Error al actualizar producto:', error);
-    res.status(400).json({ message: 'Error al actualizar producto', error: error.message });
-  }
-});
-
-// DELETE - Eliminar un producto
-app.delete('/api/products/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const product = await Product.findByPk(id);
-    
-    if (!product) {
-      return res.status(404).json({ message: 'Producto no encontrado' });
-    }
-
-    await product.destroy();
-    res.json({ message: 'Producto eliminado con éxito' });
-  } catch (error) {
-    console.error('Error al eliminar producto:', error);
-    res.status(400).json({ message: 'Error al eliminar producto', error: error.message });
-  }
-});
+// Rutas
+app.get('/api/products', getAllProducts);
+app.post('/api/products', createProduct);
+app.put('/api/products/:id', updateProduct);
+app.delete('/api/products/:id', deleteProduct);
 
 // Iniciar el servidor solo después de sincronizar la base de datos
 initializeDatabase().then(() => {
